@@ -12,7 +12,7 @@ namespace Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties;
 /// <remarks>
 /// This only affects schema generation for Swagger and has no impact on runtime serialization.
 /// </remarks>
-public sealed class SwashbuckleIgnorePropertiesSchemaFilter : ISchemaFilter
+public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
 {
     /// <summary>
     /// Applies the filter by removing properties from the generated OpenAPI schema
