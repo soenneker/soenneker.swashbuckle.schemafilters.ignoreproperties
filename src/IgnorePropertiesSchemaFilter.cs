@@ -1,6 +1,8 @@
 ﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using Soenneker.Swashbuckle.Attributes.IgnoreProperty;
 
 namespace Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties;
@@ -30,7 +32,11 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
             if (prop.GetCustomAttribute<OpenApiIgnoreProperty>() == null)
                 continue;
 
-            string jsonName = prop.Name;
+            // Try to get the JSON property name (System.Text.Json or Newtonsoft)
+            string jsonName = prop.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name
+                              ?? prop.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName
+                              ?? prop.Name;
+
             schema.Properties.Remove(jsonName);
         }
     }
