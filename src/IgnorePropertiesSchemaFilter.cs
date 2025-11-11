@@ -1,7 +1,7 @@
-﻿using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+﻿using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 using Soenneker.Swashbuckle.Attributes.IgnoreProperty;
 
@@ -22,9 +22,9 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
     /// </summary>
     /// <param name="schema">The OpenAPI schema being generated.</param>
     /// <param name="context">The context for schema generation, including the target type.</param>
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
-        if (context.Type.GetProperties() is not {Length: > 0} props)
+        if (context.Type.GetProperties() is not { Length: > 0 } props)
             return;
 
         foreach (PropertyInfo prop in props)
