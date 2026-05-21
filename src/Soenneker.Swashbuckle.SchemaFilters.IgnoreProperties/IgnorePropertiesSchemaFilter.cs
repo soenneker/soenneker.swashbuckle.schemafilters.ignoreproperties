@@ -24,7 +24,7 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
     /// <param name="context">The context for schema generation, including the target type.</param>
     public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
-        if (context.Type.GetProperties() is not { Length: > 0 } props)
+        if (schema is not OpenApiSchema mutable || mutable.Properties == null || context.Type.GetProperties() is not { Length: > 0 } props)
             return;
 
         foreach (PropertyInfo prop in props)
@@ -37,7 +37,7 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
                               ?? prop.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName
                               ?? prop.Name;
 
-            schema.Properties.Remove(jsonName);
+            mutable.Properties.Remove(jsonName);
         }
     }
 }
