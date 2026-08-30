@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 using Microsoft.OpenApi;
 using Newtonsoft.Json;
 using Soenneker.Swashbuckle.Attributes.IgnoreProperty;
+using System;
+using System.Linq;
 
 namespace Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties;
 
@@ -37,7 +39,13 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
                               ?? prop.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName
                               ?? prop.Name;
 
-            mutable.Properties.Remove(jsonName);
+            if (mutable.Properties.Remove(jsonName))
+                continue;
+
+            string? caseAdjustedName = mutable.Properties.Keys.FirstOrDefault(name => string.Equals(name, jsonName, StringComparison.OrdinalIgnoreCase));
+
+            if (caseAdjustedName is not null)
+                mutable.Properties.Remove(caseAdjustedName);
         }
     }
 }

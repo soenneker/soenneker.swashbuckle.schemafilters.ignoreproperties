@@ -5,24 +5,41 @@
 
 # Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties
 
-A schema filter that removes properties from Swagger/OpenAPI documentation if they are marked with the `OpenApiIgnoreProperty`.
+Removes properties marked with `OpenApiIgnoreProperty` from Swashbuckle-generated schemas.
 
-## Install
+## Installation
 
 ```bash
 dotnet add package Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties
 ```
 
-## What you get
+## Registration
 
-- `IgnorePropertiesSchemaFilter` — A schema filter that removes properties from Swagger/OpenAPI documentation if they are marked with the `OpenApiIgnoreProperty`.
+```csharp
+using Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties;
 
-## API at a glance
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SchemaFilter<IgnorePropertiesSchemaFilter>();
+});
+```
 
-| API | What it does | Result / important behavior |
-| --- | --- | --- |
-| `IgnorePropertiesSchemaFilter.Apply(schema, context)` | Applies the filter by removing properties from the generated OpenAPI schema that have the `OpenApiIgnoreProperty`. | Returns no value; the requested change is complete when the method returns. |
+The package includes the marker attribute dependency:
 
-## Important behavior
+```csharp
+using Soenneker.Swashbuckle.Attributes.IgnoreProperty;
 
-- `IgnorePropertiesSchemaFilter`: This only affects schema generation for Swagger and has no impact on runtime serialization.
+public sealed class UserResponse
+{
+    public required string DisplayName { get; init; }
+
+    [OpenApiIgnoreProperty]
+    public string? InternalCorrelationId { get; init; }
+}
+```
+
+`InternalCorrelationId` is omitted from the generated schema. The filter honors property names explicitly set with System.Text.Json's `JsonPropertyName` or Newtonsoft.Json's `JsonProperty`, and it handles the common PascalCase-to-camelCase naming difference.
+
+Custom naming policies that change more than casing should pair the property with an explicit JSON-name attribute so the filter can identify the generated schema key.
+
+This is documentation filtering, not data protection. The property remains available to model binding and JSON serialization unless the corresponding serializer-ignore attribute is also applied.

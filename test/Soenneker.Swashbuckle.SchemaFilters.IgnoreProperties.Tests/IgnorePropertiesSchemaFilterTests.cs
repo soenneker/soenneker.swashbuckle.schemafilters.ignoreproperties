@@ -1,6 +1,9 @@
 using Microsoft.OpenApi;
+using Soenneker.Swashbuckle.Attributes.IgnoreProperty;
 using Soenneker.Tests.HostedUnit;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties.Tests;
 
@@ -24,5 +27,26 @@ public class IgnorePropertiesSchemaFilterTests : HostedUnitTest
         var context = new SchemaFilterContext(typeof(string), null!, new SchemaRepository(), null, null);
 
         filter.Apply(schema, context);
+    }
+
+    [Test]
+    public async Task Apply_should_remove_camel_case_schema_property()
+    {
+        var filter = new IgnorePropertiesSchemaFilter();
+        var schema = new OpenApiSchema
+        {
+            Properties = new Dictionary<string, IOpenApiSchema> { ["internalValue"] = new OpenApiSchema() }
+        };
+        var context = new SchemaFilterContext(typeof(TestModel), null!, new SchemaRepository(), null, null);
+
+        filter.Apply(schema, context);
+
+        await Assert.That(schema.Properties).IsEmpty();
+    }
+
+    private sealed class TestModel
+    {
+        [OpenApiIgnoreProperty]
+        public string? InternalValue { get; init; }
     }
 }
