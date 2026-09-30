@@ -30,7 +30,7 @@ public class IgnorePropertiesSchemaFilterTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Apply_should_remove_camel_case_schema_property()
+    public async ValueTask Apply_should_remove_camel_case_schema_property()
     {
         var filter = new IgnorePropertiesSchemaFilter();
         var schema = new OpenApiSchema
