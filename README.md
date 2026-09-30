@@ -38,7 +38,7 @@ public sealed class UserResponse
 }
 ```
 
-`InternalCorrelationId` is omitted from the generated schema. The filter honors property names explicitly set with System.Text.Json's `JsonPropertyName` or Newtonsoft.Json's `JsonProperty`, and it handles the common PascalCase-to-camelCase naming difference.
+`InternalCorrelationId` is omitted from the generated schema. The filter honors property names explicitly set with System.Text.Json's `JsonPropertyName`, and it handles the common PascalCase-to-camelCase naming difference.
 
 Custom naming policies that change more than casing should pair the property with an explicit JSON-name attribute so the filter can identify the generated schema key.
 

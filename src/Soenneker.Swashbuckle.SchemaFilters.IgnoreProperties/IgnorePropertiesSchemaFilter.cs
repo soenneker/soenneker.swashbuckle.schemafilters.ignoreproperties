@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi;
-using Newtonsoft.Json;
 using Soenneker.Swashbuckle.Attributes.IgnoreProperty;
 using System;
 using System.Linq;
@@ -34,9 +33,8 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
             if (prop.GetCustomAttribute<OpenApiIgnoreProperty>() == null)
                 continue;
 
-            // Try to get the JSON property name (System.Text.Json or Newtonsoft)
+            // Try to get the JSON property name (System.Text.Json)
             string jsonName = prop.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name
-                              ?? prop.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName
                               ?? prop.Name;
 
             if (mutable.Properties.Remove(jsonName))
