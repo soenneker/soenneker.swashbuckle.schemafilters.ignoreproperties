@@ -1,4 +1,6 @@
-﻿using Swashbuckle.AspNetCore.SwaggerGen;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi;
@@ -17,6 +19,25 @@ namespace Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties;
 /// </remarks>
 public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
 {
+    private readonly Func<Type, IEnumerable<string>> _ignoredNames;
+
+    /// <summary>Discovers ignored properties at runtime.</summary>
+    [RequiresUnreferencedCode("Runtime schema discovery requires preserved properties. Supply explicit ignored JSON names when trimming.")]
+    public IgnorePropertiesSchemaFilter() => _ignoredNames = Discover;
+
+    /// <summary>Uses an explicit type-to-ignored-JSON-names map without reflection.</summary>
+    public IgnorePropertiesSchemaFilter(IReadOnlyDictionary<Type, IReadOnlyList<string>> ignoredNames)
+    {
+        ArgumentNullException.ThrowIfNull(ignoredNames);
+        var snapshot = ignoredNames.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
+        _ignoredNames = type => snapshot.TryGetValue(type, out var names) ? names : Array.Empty<string>();
+    }
+
+    [RequiresUnreferencedCode("Runtime schema discovery requires preserved properties.")]
+    private static IEnumerable<string> Discover(Type type) => type.GetProperties()
+        .Where(property => property.GetCustomAttribute<OpenApiIgnoreProperty>() is not null)
+        .Select(property => property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name);
+
     /// <summary>
     /// Applies the filter by removing properties from the generated OpenAPI schema
     /// that have the <see cref="OpenApiIgnoreProperty"/>.
@@ -25,18 +46,11 @@ public sealed class IgnorePropertiesSchemaFilter : ISchemaFilter
     /// <param name="context">The context for schema generation, including the target type.</param>
     public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
-        if (schema is not OpenApiSchema mutable || mutable.Properties == null || context.Type.GetProperties() is not { Length: > 0 } props)
+        if (schema is not OpenApiSchema mutable || mutable.Properties == null)
             return;
 
-        foreach (PropertyInfo prop in props)
+        foreach (string jsonName in _ignoredNames(context.Type))
         {
-            if (prop.GetCustomAttribute<OpenApiIgnoreProperty>() == null)
-                continue;
-
-            // Try to get the JSON property name (System.Text.Json)
-            string jsonName = prop.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name
-                              ?? prop.Name;
-
             if (mutable.Properties.Remove(jsonName))
                 continue;
 
