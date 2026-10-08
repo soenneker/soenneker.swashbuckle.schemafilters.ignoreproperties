@@ -4,6 +4,7 @@ using Soenneker.Tests.HostedUnit;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Soenneker.Swashbuckle.SchemaFilters.IgnoreProperties.Tests;
 
@@ -30,7 +31,7 @@ public class IgnorePropertiesSchemaFilterTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask Apply_should_remove_camel_case_schema_property()
+    public async ValueTask Apply_should_remove_camel_case_schema_property(CancellationToken cancellationToken)
     {
         var filter = new IgnorePropertiesSchemaFilter();
         var schema = new OpenApiSchema
